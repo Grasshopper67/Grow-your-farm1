@@ -75,10 +75,37 @@ box(scene,3.6,.3,2.2,0x9a633a,9,.7,-5);box(scene,4,.2,2.6,0x74452e,9,1.65,-5);bo
 for(let i=0;i<4;i++){let t=new THREE.Mesh(new THREE.IcosahedronGeometry(1.1,1),mat(0x4b914b));t.position.set([-10,11,-11,12][i],1.1,[8,8,-10,-10][i]);scene.add(t);box(scene,.4,2,.4,0x80502e,t.position.x,0,t.position.z)}
 // decorative flowers
 for(let i=0;i<22;i++){let x=(Math.random()-.5)*32,z=(Math.random()-.5)*28;if(Math.abs(x)<7&&Math.abs(z)<7)continue;let f=new THREE.Mesh(new THREE.SphereGeometry(.12,8,8),mat([0xffd65b,0xf58cb7,0xffffff][i%3]));f.position.set(x,.15,z);scene.add(f)}
-raycaster=new THREE.Raycaster();mouse=new THREE.Vector2();makeGroundDetail();makeFarmer()}
+// Dense decorative grass outside the fenced plot. Instanced meshes keep this lightweight.
+function makeOuterGrass(){
+ const bladeGeo=new THREE.ConeGeometry(.055,.38,3);
+ bladeGeo.translate(0,.19,0);
+ const bladeMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:1});
+ const count=2600, blades=new THREE.InstancedMesh(bladeGeo,bladeMat,count);
+ const dummy=new THREE.Object3D();
+ const colors=[new THREE.Color(0x4f9147),new THREE.Color(0x65a94f),new THREE.Color(0x78b85d),new THREE.Color(0x8ac56a),new THREE.Color(0x588f43)];
+ let made=0, tries=0;
+ while(made<count && tries<count*4){
+  tries++;
+  const x=(Math.random()-.5)*44, z=(Math.random()-.5)*40;
+  if(Math.abs(x)<7.9 && Math.abs(z)<7.9)continue;
+  if(Math.abs(x+3.5)<2.7 && z>5.2 && z<11.2)continue;
+  if(x>6.5 && x<12 && z>-7.5 && z<-2.5)continue;
+  dummy.position.set(x,0,z);
+  const h=.65+Math.random()*.8, lean=(Math.random()-.5)*.42;
+  dummy.scale.set(.65+Math.random()*.75,h,.65+Math.random()*.75);
+  dummy.rotation.set(lean,Math.random()*Math.PI*2,lean*.5);
+  dummy.updateMatrix();blades.setMatrixAt(made,dummy.matrix);
+  blades.setColorAt(made,colors[Math.floor(Math.random()*colors.length)]);
+  made++;
+ }
+ blades.count=made;blades.instanceMatrix.needsUpdate=true;
+ if(blades.instanceColor)blades.instanceColor.needsUpdate=true;
+ blades.castShadow=false;blades.receiveShadow=false;scene.add(blades);
+}
+raycaster=new THREE.Raycaster();mouse=new THREE.Vector2();makeGroundDetail();makeOuterGrass();makeFarmer()}
 
 // A custom blocky third-person farmer avatar, built from separate articulated parts.
-let farmer, farmerParts={}, farmerVelocity=new THREE.Vector3(), keys={}, walkPhase=0;
+let farmer, farmerParts={}, farmerVelocity=new THREE.Vector3(), keys={}, walkPhase=0, idlePhase=0;
 function makeBlock(parent,w,h,d,color,x,y,z,round=0){
  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color,.72));
  mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
@@ -129,36 +156,73 @@ function makeGroundDetail(){
 }
 function updateFarmer(dt){
  if(!farmer)return;
- const forward=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0);
- const side=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
- const moving=forward!==0||side!==0;
- const speed=(keys.ShiftLeft||keys.ShiftRight?7.2:4.5);
- const dir=new THREE.Vector3(side,0,-forward);
- if(dir.lengthSq()>0)dir.normalize();
- // Movement follows the camera's horizontal facing direction.
- const camForward=new THREE.Vector3();camera.getWorldDirection(camForward);camForward.y=0;camForward.normalize();
- const camRight=new THREE.Vector3().crossVectors(camForward,new THREE.Vector3(0,1,0)).negate().normalize();
- const move=camRight.multiplyScalar(dir.x).add(camForward.multiplyScalar(-dir.z));
- if(move.lengthSq()>0)move.normalize();
- farmer.position.addScaledVector(move,speed*dt);
- farmer.position.x=THREE.MathUtils.clamp(farmer.position.x,-5.9,5.9);
- farmer.position.z=THREE.MathUtils.clamp(farmer.position.z,-5.9,5.9);
- if(moving){
-  farmer.rotation.y=Math.atan2(move.x,move.z);
-  walkPhase+=dt*(keys.ShiftLeft||keys.ShiftRight?13:9);
-  const swing=Math.sin(walkPhase)*.62;
-  farmerParts.leftLeg.rotation.x=swing;farmerParts.rightLeg.rotation.x=-swing;
-  farmerParts.leftArm.rotation.x=-swing*.72;farmerParts.rightArm.rotation.x=swing*.72;
-  farmer.position.y=Math.abs(Math.sin(walkPhase*2))*.035;
- }else{
-  for(const p of [farmerParts.leftLeg,farmerParts.rightLeg,farmerParts.leftArm,farmerParts.rightArm])p.rotation.x=THREE.MathUtils.damp(p.rotation.x,0,10,dt);
-  farmer.position.y=THREE.MathUtils.damp(farmer.position.y,0,10,dt);
- }
- // Smooth third-person camera follow; mouse orbit remains available.
- const target=farmer.position.clone().add(new THREE.Vector3(0,1.2,0));
- controls.target.lerp(target,Math.min(1,dt*4));
-}
+ // Roblox-style camera-relative controls: W follows the camera view, A/D strafe,
+ // and the avatar smoothly turns to face the direction it is actually travelling.
+ const forwardInput=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0);
+ const sideInput=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
+ const sprint=!!(keys.ShiftLeft||keys.ShiftRight);
+ const maxSpeed=sprint?8:5.8;
 
+ const input=new THREE.Vector2(sideInput,forwardInput);
+ if(input.lengthSq()>1)input.normalize();
+
+ const viewForward=new THREE.Vector3();
+ camera.getWorldDirection(viewForward);
+ viewForward.y=0;
+ if(viewForward.lengthSq()<.0001)viewForward.set(0,0,-1);
+ viewForward.normalize();
+
+ // Correct right vector: positive D must move to the character's right.
+ const viewRight=new THREE.Vector3().crossVectors(viewForward,new THREE.Vector3(0,1,0)).normalize();
+ const moveDirection=viewRight.multiplyScalar(input.x).add(viewForward.multiplyScalar(input.y));
+ if(moveDirection.lengthSq()>0)moveDirection.normalize();
+
+ const desiredX=moveDirection.x*maxSpeed;
+ const desiredZ=moveDirection.z*maxSpeed;
+ const accelerating=input.lengthSq()>0;
+ const response=accelerating?22:30;
+ const blend=1-Math.exp(-response*dt);
+ farmerVelocity.x+=(desiredX-farmerVelocity.x)*blend;
+ farmerVelocity.z+=(desiredZ-farmerVelocity.z)*blend;
+
+ farmer.position.x+=farmerVelocity.x*dt;
+ farmer.position.z+=farmerVelocity.z*dt;
+
+ // Open grassy area around the farm is walkable; keep the player within the world.
+ farmer.position.x=THREE.MathUtils.clamp(farmer.position.x,-19,19);
+ farmer.position.z=THREE.MathUtils.clamp(farmer.position.z,-17,17);
+
+ const speed=Math.hypot(farmerVelocity.x,farmerVelocity.z);
+ const moving=speed>.18;
+ if(moving){
+  const faceAngle=Math.atan2(farmerVelocity.x,farmerVelocity.z);
+  const angleDelta=Math.atan2(Math.sin(faceAngle-farmer.rotation.y),Math.cos(faceAngle-farmer.rotation.y));
+  farmer.rotation.y+=angleDelta*(1-Math.exp(-16*dt));
+
+  // Even, speed-scaled stride with opposite arm/leg swing.
+  walkPhase+=dt*(sprint?12.5:9.2)*(Math.min(speed/maxSpeed,1));
+  const stride=Math.sin(walkPhase)*Math.min(.62,speed/maxSpeed*.62);
+  const counter=Math.sin(walkPhase+Math.PI)*Math.min(.62,speed/maxSpeed*.62);
+  farmerParts.leftLeg.rotation.x=THREE.MathUtils.damp(farmerParts.leftLeg.rotation.x,stride,20,dt);
+  farmerParts.rightLeg.rotation.x=THREE.MathUtils.damp(farmerParts.rightLeg.rotation.x,counter,20,dt);
+  farmerParts.leftArm.rotation.x=THREE.MathUtils.damp(farmerParts.leftArm.rotation.x,-counter*.78,18,dt);
+  farmerParts.rightArm.rotation.x=THREE.MathUtils.damp(farmerParts.rightArm.rotation.x,-stride*.78,18,dt);
+  farmerParts.torso.rotation.x=THREE.MathUtils.damp(farmerParts.torso.rotation.x,sprint?-.055:-.025,8,dt);
+ }else{
+  walkPhase=0;
+  for(const part of [farmerParts.leftLeg,farmerParts.rightLeg,farmerParts.leftArm,farmerParts.rightArm]){
+   part.rotation.x=THREE.MathUtils.damp(part.rotation.x,0,18,dt);
+  }
+  farmerParts.torso.rotation.x=THREE.MathUtils.damp(farmerParts.torso.rotation.x,0,10,dt);
+ }
+
+ // Keep the third-person camera locked to the avatar's follow point without
+ // dragging the orbit target behind the player or changing the orbit distance.
+ const newTarget=farmer.position.clone().add(new THREE.Vector3(0,1.35,0));
+ const followDelta=newTarget.sub(controls.target);
+ controls.target.add(followDelta);
+ camera.position.add(followDelta);
+}
 function plantModel(id,v){let g=new THREE.Group(),c=crop(id),leaf=mat(0x4e9c4f),fruit=mat(c.color,.45);let height=.35+v*.95;let stem=new THREE.Mesh(new THREE.CylinderGeometry(.045,.07,height,7),leaf);stem.position.y=height/2;g.add(stem);
 for(let i=0;i<5;i++){let l=new THREE.Mesh(new THREE.SphereGeometry(.22+v*.08,9,7),mat(i%2?0x60b65a:0x438d49));let a=i/5*Math.PI*2;l.position.set(Math.cos(a)*.27,height*.55+Math.sin(i)*.12,Math.sin(a)*.27);l.scale.y=.45;g.add(l)}
 if(v>.28){let geo=id==='carrot'?new THREE.ConeGeometry(.22+v*.1,.62+v*.35,9):new THREE.SphereGeometry(.22+v*.2,12,10);let f=new THREE.Mesh(geo,fruit);f.position.y=height+.15; if(id==='carrot')f.rotation.z=Math.PI;g.add(f);if(id==='watermelon'){f.scale.set(1.2,.8,1.2)}}
