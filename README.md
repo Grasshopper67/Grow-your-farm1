@@ -1,24 +1,30 @@
-# Grow Your Farm (GitHub Pages)
+# Grow Your Farm 3D
 
-A playable browser farming game inspired by garden-growing games. It uses plain HTML, CSS, and JavaScript, so it runs directly in a browser—no C++ compiler or downloads needed.
+A playable 3D browser farming game made with Three.js. It can be hosted for free with GitHub Pages.
 
 ## Play locally
-Open `index.html` in a modern browser.
+Open `index.html` using a modern browser with an internet connection. The game loads Three.js from jsDelivr.
 
 ## Publish on GitHub Pages
-1. Create/open a GitHub repository.
-2. Upload `index.html` and `README.md` to the repository's **root** (top level).
-3. Open the repository's **Settings**.
-4. Select **Pages** in the left sidebar.
-5. Under **Build and deployment**, choose **Deploy from a branch**.
-6. Set branch to `main` and folder to `/ (root)`, then click **Save**.
-7. Wait a minute or two. GitHub will show your game URL in the Pages section.
+1. Upload `index.html` and `README.md` to the root of your GitHub repository.
+2. Open **Settings → Pages**.
+3. Under **Build and deployment**, choose **Deploy from a branch**.
+4. Choose branch `main` and folder `/ (root)`, then click **Save**.
+5. Wait for GitHub Pages to publish the site. The Pages screen will show your game URL.
 
-## Gameplay
-- Select a seed, then click an empty plot.
-- Crops grow in real time.
-- Click ripe crops to harvest coins.
-- Buy better seeds and expand your garden.
-- Progress saves in the browser using local storage.
+## Controls
+- Left-click an empty soil bed to plant the selected seed.
+- Left-click a ripe crop to harvest it.
+- Drag to rotate the camera.
+- Scroll to zoom.
+- Right-click and drag to pan.
+- Select or buy seeds in the left-side panel.
 
-This is an original small browser game project; it is not affiliated with the Roblox game Grow a Garden.
+## Features
+- 3D garden scene with camera orbit and zoom
+- Five crop types with different prices, growth times, and harvest values
+- Real-time crop growth
+- Seed shop, coins, harvest count, and farm expansion
+- Automatic browser save using localStorage
+
+Note: This is a browser game, not a downloadable Windows executable. Three.js is loaded from a CDN, so an internet connection is required.
