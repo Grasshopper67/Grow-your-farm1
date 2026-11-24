@@ -1,138 +1,107 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Grow Your Farm 3D</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Garden World 3D</title>
 <style>
-:root{--green:#326b42;--green2:#5e9655;--cream:#fff9e9;--ink:#26382c;--muted:#71806e;--gold:#efbd4e}
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;color:var(--ink);background:#d9edcf;overflow:hidden}
-#game{position:fixed;inset:0}canvas{display:block}
-header{position:fixed;z-index:2;top:14px;left:18px;right:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;pointer-events:none}
-.brand,.stats,.panel,.hintbox{pointer-events:auto;background:#fffdf0ed;border:1px solid #e5dfc8;border-radius:17px;box-shadow:0 8px 28px #28452a24}
-.brand{padding:11px 16px;display:flex;align-items:center;gap:10px}.logo{font-size:27px}.brand h1{font-size:21px;margin:0;letter-spacing:-.5px}.brand small{display:block;color:var(--muted);font-size:11px}
-.stats{display:flex;gap:0;overflow:hidden}.stat{padding:10px 17px;border-left:1px solid #ece5d1;min-width:92px}.stat:first-child{border:0}.stat small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:800}.stat b{font-size:18px}
-.left{position:fixed;z-index:2;left:18px;top:104px;width:245px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 125px);overflow:auto}
-.panel{padding:14px}.panel h2{font-size:15px;margin:0 0 9px}.sub{font-size:11px;color:var(--muted);line-height:1.5}
-.seed{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #eee7d6}.seed:first-of-type{border-top:0}.seed .emoji{font-size:25px;width:31px;text-align:center}.seedinfo{flex:1;min-width:0}.seedinfo b{display:block;font-size:12px}.seedinfo small{font-size:10px;color:var(--muted)}
-button{border:0;border-radius:9px;padding:7px 9px;background:var(--green);color:white;font-weight:800;font-size:11px;cursor:pointer;box-shadow:0 2px 0 #204a2e}button:hover{filter:brightness(1.1)}button:disabled{opacity:.4;cursor:not-allowed}.select{background:#e9f0df;color:#31583a;box-shadow:0 2px 0 #cad9bd}.selected{background:#d99a2c;box-shadow:0 2px 0 #a46b1d}
-.bottom{position:fixed;z-index:2;bottom:17px;left:50%;transform:translateX(-50%);width:min(620px,calc(100vw - 32px));display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;pointer-events:none}.bottom button,.message{pointer-events:auto}.message{background:#fffdf0ed;border:1px solid #e5dfc8;border-radius:12px;padding:10px 14px;box-shadow:0 6px 20px #28452a20;font-size:12px;text-align:center;min-width:230px}
-.hintbox{position:fixed;right:18px;bottom:18px;z-index:2;padding:11px 14px;max-width:220px;font-size:11px;line-height:1.55;color:#586b57}
-#toast{position:fixed;z-index:5;top:88px;left:50%;transform:translate(-50%,-10px);opacity:0;transition:.2s;background:#254a32;color:white;padding:10px 16px;border-radius:12px;font-weight:800;font-size:12px;pointer-events:none}#toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:760px){header{left:8px;right:8px;top:8px;flex-wrap:wrap}.brand{padding:8px 11px}.brand h1{font-size:17px}.stats{margin-left:auto}.stat{padding:7px 9px;min-width:70px}.stat b{font-size:15px}.left{left:8px;top:100px;width:185px;max-height:calc(100vh - 190px)}.panel{padding:10px}.hintbox{display:none}.bottom{bottom:8px}}
-</style>
-</head>
+:root{--ink:#26382d;--green:#36734a;--cream:#fff9e9;--line:#e8dfc8;--muted:#72806e}
+*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#bfe3ed;color:var(--ink);font-family:system-ui,Segoe UI,sans-serif}#world{position:fixed;inset:0}canvas{display:block}
+header{position:fixed;z-index:3;top:12px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none}
+.brand,.stats,.panel,.bottom,.modal{background:#fffdf0ed;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 25px #253c2822;pointer-events:auto}
+.brand{padding:9px 14px;display:flex;align-items:center;gap:9px}.brand .logo{font-size:26px}.brand h1{margin:0;font-size:19px}.brand small{display:block;font-size:10px;color:var(--muted)}
+.stats{display:flex;overflow:hidden}.stat{padding:8px 13px;border-left:1px solid #eee5d1;min-width:82px}.stat:first-child{border:0}.stat small{display:block;font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:800;letter-spacing:.5px}.stat b{font-size:16px}
+.sidebar{position:fixed;z-index:3;left:14px;top:90px;bottom:86px;width:270px;overflow:auto;display:flex;flex-direction:column;gap:9px;pointer-events:none}.panel{padding:12px;pointer-events:auto}.panel h2{margin:0 0 8px;font-size:14px}.muted{color:var(--muted);font-size:10px;line-height:1.5}
+.tabs{display:flex;gap:5px;margin-bottom:8px}.tabs button{flex:1;padding:7px 4px}
+button{border:0;border-radius:9px;background:var(--green);color:white;font-weight:800;font-size:10px;padding:7px 9px;cursor:pointer;box-shadow:0 2px 0 #204a2e}button:hover{filter:brightness(1.1)}button:disabled{opacity:.4;cursor:not-allowed}.secondary{background:#e9f0df;color:#36563b;box-shadow:0 2px 0 #cad8bd}.gold{background:#d99b2f;box-shadow:0 2px 0 #a66c1d}
+.item{display:flex;align-items:center;gap:7px;padding:7px 0;border-top:1px solid #eee7d8}.item:first-of-type{border-top:0}.emoji{width:29px;font-size:22px;text-align:center}.info{flex:1;min-width:0}.info b{display:block;font-size:11px}.info small{display:block;color:var(--muted);font-size:9px}.count{font-size:10px;color:#5b705a;font-weight:900}
+.bottom{position:fixed;z-index:3;left:50%;bottom:12px;transform:translateX(-50%);padding:8px 12px;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 20px)}.message{font-size:11px;min-width:190px;text-align:center}.bottom button{white-space:nowrap}
+#toast{position:fixed;z-index:8;top:78px;left:50%;transform:translate(-50%,-8px);opacity:0;background:#244a32;color:white;border-radius:12px;padding:9px 14px;font-size:11px;font-weight:800;transition:.2s;pointer-events:none}#toast.show{opacity:1;transform:translate(-50%,0)}
+#modalWrap{display:none;position:fixed;inset:0;z-index:10;background:#1c302b88;place-items:center;padding:15px}#modalWrap.show{display:grid}.modal{width:min(420px,100%);padding:20px}.modal h2{margin:0 0 8px}.modal p{font-size:12px;color:var(--muted);line-height:1.5}.modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+#weather{position:fixed;z-index:2;right:14px;bottom:85px;background:#fffdf0dc;border:1px solid var(--line);border-radius:12px;padding:8px 11px;font-size:10px;box-shadow:0 5px 18px #253c2822}
+@media(max-width:760px){header{left:7px;right:7px;top:7px;flex-wrap:wrap}.brand h1{font-size:16px}.stats{margin-left:auto}.stat{padding:6px 8px;min-width:67px}.stat b{font-size:13px}.sidebar{left:7px;top:93px;bottom:70px;width:215px}.panel{padding:9px}.bottom{bottom:6px;gap:5px;padding:6px}.message{min-width:90px;font-size:9px}.bottom button{font-size:9px;padding:7px}.item{gap:4px}}
+</style></head>
 <body>
-<div id="game"></div>
+<div id="world"></div>
 <header>
- <div class="brand"><div class="logo">🌱</div><div><h1>Grow Your Farm 3D</h1><small>Plant · Grow · Harvest · Expand</small></div></div>
+ <div class="brand"><div class="logo">🌻</div><div><h1>Garden World 3D</h1><small>Plant • Mutate • Harvest • Grow</small></div></div>
  <div class="stats">
-  <div class="stat"><small>Coins</small><b id="coins">🪙 35</b></div>
+  <div class="stat"><small>Coins</small><b id="coins">🪙 120</b></div>
+  <div class="stat"><small>Garden level</small><b id="level">1</b></div>
   <div class="stat"><small>Harvests</small><b id="harvests">0</b></div>
-  <div class="stat"><small>Farm level</small><b id="level">1</b></div>
  </div>
 </header>
-<aside class="left">
- <section class="panel"><h2>🌰 Seed shop</h2><div class="sub">Choose a seed, then click an empty soil bed. Better crops take longer but sell for more.</div><div id="seeds"></div></section>
- <section class="panel"><h2>🧰 Farm upgrades</h2><button id="expand" style="width:100%">Expand farm · 100 🪙</button><div class="sub" style="margin-top:8px">Unlock another row of planting beds.</div><button id="save" class="select" style="width:100%;margin-top:9px">Save farm</button></section>
+<aside class="sidebar">
+ <section class="panel"><div class="tabs"><button id="seedTab" class="gold">🌱 Seeds</button><button id="gearTab" class="secondary">🧰 Gear</button><button id="petTab" class="secondary">🐝 Pets</button></div><div id="shop"></div></section>
+ <section class="panel"><h2>🎒 Backpack</h2><div id="inventory"></div><button id="sellAll" class="gold" style="width:100%;margin-top:7px">Sell all harvested crops</button></section>
+ <section class="panel"><h2>📜 Garden tasks</h2><div id="tasks" class="muted"></div></section>
 </aside>
-<div class="bottom"><div class="message" id="message">Welcome! Select a seed and click an empty garden bed.</div></div>
-<div class="hintbox"><b>How to play</b><br>• Left-click an empty bed to plant<br>• Left-click a ripe crop to harvest<br>• Drag to rotate the camera<br>• Scroll to zoom in/out<br>• Right-click and drag to pan</div>
+<div id="weather">☀️ Sunny weather · Normal growth</div>
+<div class="bottom"><span class="message" id="message">Select a seed, then click an empty soil plot.</span><button id="expand" class="gold">Expand · 250 🪙</button><button id="save" class="secondary">Save</button></div>
 <div id="toast"></div>
-<script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
-</script>
+<div id="modalWrap"><div class="modal"><h2 id="modalTitle"></h2><p id="modalText"></p><div class="actions"><button id="modalCancel" class="secondary">Cancel</button><button id="modalOk">Confirm</button></div></div></div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-const CROP=[
- {id:'carrot',name:'Carrot',emoji:'🥕',price:5,value:12,time:12,color:0xf18b35},
- {id:'tomato',name:'Tomato',emoji:'🍅',price:9,value:24,time:20,color:0xe34d42},
- {id:'corn',name:'Sweet Corn',emoji:'🌽',price:16,value:48,time:32,color:0xf4c542},
- {id:'pumpkin',name:'Pumpkin',emoji:'🎃',price:28,value:95,time:48,color:0xe9842f},
- {id:'starberry',name:'Star Berry',emoji:'🫐',price:55,value:200,time:75,color:0x6b80dc}
+import * as THREE from 'three';import{OrbitControls}from'three/addons/controls/OrbitControls.js';
+const CROPS=[
+{id:'carrot',name:'Carrot',emoji:'🥕',price:8,value:18,time:18,color:0xf28a35,stock:8},
+{id:'strawberry',name:'Strawberry',emoji:'🍓',price:18,value:45,time:32,color:0xe94758,stock:6},
+{id:'blueberry',name:'Blueberry',emoji:'🫐',price:32,value:90,time:48,color:0x6478d7,stock:4},
+{id:'tomato',name:'Tomato',emoji:'🍅',price:55,value:160,time:65,color:0xe64b3f,stock:3},
+{id:'watermelon',name:'Watermelon',emoji:'🍉',price:100,value:340,time:95,color:0x4f9c56,stock:2},
+{id:'moonflower',name:'Moonflower',emoji:'🌙',price:180,value:720,time:140,color:0x9c80d8,stock:1}
 ];
-const SAVE='growfarm3d_save_v1';
-let state={coins:35,harvests:0,level:1,selected:'carrot',inventory:{carrot:3,tomato:0,corn:0,pumpkin:0,starberry:0},plots:[]};
-let scene,camera,renderer,controls,raycaster,mouse,bedMeshes=[],cropGroups=[],clock;
-const root=document.getElementById('game');
-function say(t){document.getElementById('message').textContent=t;const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1900);}
-function crop(id){return CROP.find(x=>x.id===id)}
-function save(){localStorage.setItem(SAVE,JSON.stringify({...state,savedAt:Date.now()}));}
-function load(){try{const x=JSON.parse(localStorage.getItem(SAVE));if(x){state={...state,...x};if(!Array.isArray(state.plots))state.plots=[];}}catch(e){}}
-function makeMat(color,rough=.9){return new THREE.MeshStandardMaterial({color,roughness:rough});}
-function addBox(parent,w,h,d,color,x,y,z,mat=null){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat||makeMat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
-function init3D(){
- scene=new THREE.Scene();scene.background=new THREE.Color(0xb9e2f2);scene.fog=new THREE.Fog(0xb9e2f2,25,58);
- camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,100);camera.position.set(12,15,18);
- renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;root.appendChild(renderer.domElement);
- controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,0,0);controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.48;controls.minDistance=9;controls.maxDistance=30;
- scene.add(new THREE.HemisphereLight(0xffffff,0x758a55,2.0));
- const sun=new THREE.DirectionalLight(0xfff0cf,2.4);sun.position.set(-8,18,10);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-20;sun.shadow.camera.right=20;sun.shadow.camera.top=20;sun.shadow.camera.bottom=-20;scene.add(sun);
- addBox(scene,60,.3,60,0x75b86b,0,-.32,0);
- // distant rolling hills
- for(let i=0;i<12;i++){const a=i/12*Math.PI*2;const hill=new THREE.Mesh(new THREE.SphereGeometry(5+Math.random()*3,16,12),makeMat(i%2?0x80bf75:0x91c982));hill.scale.y=.45;hill.position.set(Math.cos(a)*23,-1.4,Math.sin(a)*23);scene.add(hill);}
- // farm fence around playable patch
- const fenceMat=makeMat(0xb77b43);for(let i=-1;i<=6;i++){for(const z of [-6.4,6.4]){addBox(scene,.18,1.0,.18,0xb77b43,i*2,.25,z,fenceMat);}for(const x of [-6.4,6.4]){addBox(scene,.18,1.0,.18,0xb77b43,x,.25,i*2,fenceMat);}}
- for(let i=-1;i<=6;i++){addBox(scene, .12,.12,.12,0xe2b16a,i*2,.72,-6.4);addBox(scene,.12,.12,.12,0xe2b16a,i*2,.72,6.4);}
- // shop stall
- const wood=makeMat(0x9a6138);addBox(scene,3.2,.35,2.0,0x9a6138,8,.75,-5.4,wood);addBox(scene,3.8,.25,2.5,0x75452e,8,1.7,-5.4);addBox(scene,.18,2,.18,0x80502f,6.65,.9,-6.1);addBox(scene,.18,2,.18,0x80502f,9.35,.9,-6.1);
- const awning=addBox(scene,3.9,.18,2.6,0xd9a64e,8,2.05,-5.4);awning.rotation.z=-.04;
- for(let i=0;i<3;i++){const pot=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),makeMat([0xe9a33a,0xd94f43,0x7c91dc][i]));pot.position.set(7+i,2.45,-5.4);scene.add(pot);}
- // decorative trees
- for(const [x,z] of [[-9,-7],[10,7],[-10,8],[11,-9]]){addBox(scene,.45,2,.45,0x80502f,x,0,z);const leaves=new THREE.Mesh(new THREE.IcosahedronGeometry(1.5,1),makeMat(0x4c934f));leaves.position.set(x,1.8,z);leaves.castShadow=true;scene.add(leaves);}
- raycaster=new THREE.Raycaster();mouse=new THREE.Vector2();clock=new THREE.Clock();
-}
-function makeCropGroup(id,progress){
- const group=new THREE.Group();const c=crop(id);const green=makeMat(0x348848),leaf=makeMat(0x5eae55),fruit=makeMat(c.color,.55);
- const stem=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,.45+progress*.7,7),green);stem.position.y=.35+progress*.35;stem.castShadow=true;group.add(stem);
- const scale=.3+progress*.8;
- for(let j=0;j<4;j++){const l=new THREE.Mesh(new THREE.SphereGeometry(.28*scale,10,8),leaf);const a=j*Math.PI/2;l.position.set(Math.cos(a)*.25*scale,.48+progress*.55,Math.sin(a)*.25*scale);l.scale.set(1,.38,1);l.castShadow=true;group.add(l);}
- if(progress>.25){
-  let geo=id==='carrot'?new THREE.ConeGeometry(.22*scale,.65*scale,8):id==='pumpkin'?new THREE.SphereGeometry(.34*scale,12,10):new THREE.SphereGeometry(.25*scale,12,10);
-  const fruitMesh=new THREE.Mesh(geo,fruit);fruitMesh.position.y=.52+progress*.75;if(id==='carrot')fruitMesh.rotation.z=Math.PI;fruitMesh.castShadow=true;group.add(fruitMesh);
-  if(id==='pumpkin'){for(let k=0;k<7;k++){const rib=new THREE.Mesh(new THREE.TorusGeometry(.24*scale,.025*scale,5,12),makeMat(0xf6a04d));rib.position.y=fruitMesh.position.y;rib.rotation.y=k*Math.PI/7;group.add(rib);}}
- }
- if(progress>=1){const sparkle=new THREE.Mesh(new THREE.OctahedronGeometry(.13),makeMat(0xffe477));sparkle.position.y=1.55;group.add(sparkle);}
- return group;
-}
-function rebuildGarden(){
- bedMeshes.forEach(m=>scene.remove(m));cropGroups.forEach(m=>scene.remove(m));bedMeshes=[];cropGroups=[];
- const cols=5,rows=Math.ceil(state.plots.length/cols);
- for(let i=0;i<state.plots.length;i++){
-  const x=(i%cols-2)*2.25,z=(Math.floor(i/cols)-(rows-1)/2)*2.25;
-  const bed=new THREE.Group();bed.position.set(x,0,z);scene.add(bed);
-  addBox(bed,2.05,.24,2.05,0x855633,0,.02,0);
-  addBox(bed,1.82,.12,1.82,0x5c3928,0,.18,0);
-  const top=addBox(bed,1.68,.035,1.68,0x70472d,0,.255,0);
-  top.userData.plotIndex=i;bedMeshes.push(top);
-  const p=state.plots[i];if(p){const v=getProgress(p);const plant=makeCropGroup(p.crop,v);plant.position.set(x,.28,z);scene.add(plant);cropGroups.push(plant);}
- }
-}
-function getProgress(p){return Math.min(1,(Date.now()-p.plantedAt)/(crop(p.crop).time*1000));}
-function updateUI(){
- document.getElementById('coins').textContent='🪙 '+state.coins;document.getElementById('harvests').textContent=state.harvests;document.getElementById('level').textContent=state.level;
- const box=document.getElementById('seeds');box.innerHTML='';
- CROP.forEach(c=>{const row=document.createElement('div');row.className='seed';row.innerHTML=`<div class="emoji">${c.emoji}</div><div class="seedinfo"><b>${c.name}</b><small>${c.time}s · sells ${c.value} 🪙 · x${state.inventory[c.id]||0}</small></div><button class="${state.selected===c.id?'selected':'select'}" data-s="${c.id}">${state.selected===c.id?'✓':'Select'}</button><button data-b="${c.id}" class="select">${c.price}🪙</button>`;box.appendChild(row);});
- box.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{state.selected=b.dataset.s;say(crop(state.selected).name+' selected. Click an empty bed to plant.');updateUI();});
- box.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>buy(b.dataset.b));
- const cost=100*state.level;const exp=document.getElementById('expand');exp.textContent=state.level>=4?'Max farm size':`Expand farm · ${cost} 🪙`;exp.disabled=state.level>=4||state.coins<cost;
-}
-function buy(id){const c=crop(id);if(state.coins<c.price){say('Not enough coins for '+c.name+'.');return;}state.coins-=c.price;state.inventory[id]=(state.inventory[id]||0)+1;state.selected=id;say('Bought '+c.name+' seeds!');save();updateUI();}
-function handleClick(e){
- if(e.target.closest('.left,header,.bottom,.hintbox'))return;
- const r=renderer.domElement.getBoundingClientRect();mouse.x=((e.clientX-r.left)/r.width)*2-1;mouse.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(mouse,camera);
- const hits=raycaster.intersectObjects(bedMeshes,false);if(!hits.length)return;const i=hits[0].object.userData.plotIndex,p=state.plots[i];
- if(p){if(getProgress(p)>=1){const c=crop(p.crop),bonus=Math.random()<.1?2:1;const earned=c.value*bonus;state.coins+=earned;state.harvests++;state.plots[i]=null;const lvl=Math.min(4,Math.floor(state.harvests/10)+1);if(lvl>state.level){state.level=lvl;say('Farm level up! Now level '+lvl+'!');}else say('Harvested '+c.name+' for '+earned+' coins!');rebuildGarden();save();updateUI();}else say(crop(p.crop).name+' is '+Math.floor(getProgress(p)*100)+'% grown.');}
- else{const id=state.selected;if((state.inventory[id]||0)<=0){say('Out of '+crop(id).name+' seeds. Buy more in the seed shop.');return;}state.inventory[id]--;state.plots[i]={crop:id,plantedAt:Date.now()};say('Planted '+crop(id).name+'!');rebuildGarden();save();updateUI();}
-}
-rendererLoop();
-function rendererLoop(){requestAnimationFrame(rendererLoop);if(!renderer)return;controls.update();renderer.render(scene,camera);}
-load();if(state.plots.length===0)state.plots=Array.from({length:25},()=>null);init3D();rebuildGarden();updateUI();renderer.domElement.addEventListener('pointerup',handleClick);
-document.getElementById('save').onclick=()=>{save();say('Farm saved on this device!');};
-document.getElementById('expand').onclick=()=>{const cost=100*state.level;if(state.level>=4||state.coins<cost)return;state.coins-=cost;state.level++;for(let i=0;i<5;i++)state.plots.push(null);rebuildGarden();save();updateUI();say('Farm expanded! New beds unlocked.');};
-setInterval(()=>{if(!renderer)return;const old=cropGroups.length;rebuildGarden();},1000);
-window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
-</script>
-</body></html>
+const GEARS=[{id:'sprinkler',name:'Sprinkler',emoji:'💦',price:180,desc:'Nearby crops grow 20% faster.'},{id:'golden_can',name:'Golden watering can',emoji:'✨',price:300,desc:'Harvests have a 15% bonus chance.'},{id:'fertilizer',name:'Super fertilizer',emoji:'🧪',price:120,desc:'Instantly boosts one crop by 25%.'}];
+const PETS=[{id:'bee',name:'Garden Bee',emoji:'🐝',price:450,desc:'Pollinates crops for a small value bonus.'},{id:'bunny',name:'Lucky Bunny',emoji:'🐰',price:700,desc:'Gives a chance for bonus coins.'}];
+const KEY='garden_world_3d_v2';
+let S={coins:120,level:1,harvests:0,selected:'carrot',inventory:{carrot:4},harvested:{},harvestedValue:0,gear:{},pets:[],plots:Array(25).fill(null),tab:'seed',weather:'sun'};
+let scene,camera,renderer,controls,raycaster,mouse,bedTargets=[],plantObjects=[],lastWeather=Date.now(),weather='sun';
+const host=document.querySelector('#world');
+const mat=(c,r=.85)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
+function box(parent,w,h,d,c,x,y,z){let m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+function notify(t){document.querySelector('#message').textContent=t;let e=document.querySelector('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1900)}
+function crop(id){return CROPS.find(c=>c.id===id)}
+function growth(p){let speed=weather==='rain'?1.6:weather==='sun'?1.12:1;if(S.gear.sprinkler)speed*=1.2;return Math.min(1,(Date.now()-p.planted)/(crop(p.id).time*1000)*speed)}
+function save(){localStorage.setItem(KEY,JSON.stringify({...S,savedAt:Date.now()}))}
+function load(){try{let v=JSON.parse(localStorage.getItem(KEY));if(v)S={...S,...v}}catch(e){}}
+function init(){scene=new THREE.Scene();scene.background=new THREE.Color(0xb7dfed);scene.fog=new THREE.Fog(0xb7dfed,28,65);camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,100);camera.position.set(13,16,20);
+renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;host.appendChild(renderer.domElement);
+controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,0,0);controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.47;controls.minDistance=9;controls.maxDistance=34;
+scene.add(new THREE.HemisphereLight(0xffffff,0x76915e,2));let sun=new THREE.DirectionalLight(0xfff0ce,2.2);sun.position.set(-10,20,12);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
+box(scene,100,.3,100,0x72b86d,0,-.35,0);
+for(let i=0;i<14;i++){let h=new THREE.Mesh(new THREE.IcosahedronGeometry(4+Math.random()*3,1),mat(i%2?0x8dc77a:0x7bb66d));h.scale.y=.5;h.position.set(Math.cos(i/14*Math.PI*2)*28,-1.4,Math.sin(i/14*Math.PI*2)*28);scene.add(h)}
+// wood fence and shop corner
+for(let i=-1;i<7;i++){box(scene,.18,.95,.18,0x956039,i*2,.18,-7);box(scene,.18,.95,.18,0x956039,i*2,.18,7);box(scene,.18,.95,.18,0x956039,-7,.18,i*2);box(scene,.18,.95,.18,0x956039,7,.18,i*2)}
+box(scene,3.6,.3,2.2,0x9a633a,9,.7,-5);box(scene,4,.2,2.6,0x74452e,9,1.65,-5);box(scene,.15,2,.15,0x84512f,7.4,.9,-5.8);box(scene,.15,2,.15,0x84512f,10.6,.9,-5.8);box(scene,4.1,.2,2.7,0xe4b34d,9,2,-5);
+for(let i=0;i<4;i++){let t=new THREE.Mesh(new THREE.IcosahedronGeometry(1.1,1),mat(0x4b914b));t.position.set([-10,11,-11,12][i],1.1,[8,8,-10,-10][i]);scene.add(t);box(scene,.4,2,.4,0x80502e,t.position.x,0,t.position.z)}
+// decorative flowers
+for(let i=0;i<22;i++){let x=(Math.random()-.5)*32,z=(Math.random()-.5)*28;if(Math.abs(x)<7&&Math.abs(z)<7)continue;let f=new THREE.Mesh(new THREE.SphereGeometry(.12,8,8),mat([0xffd65b,0xf58cb7,0xffffff][i%3]));f.position.set(x,.15,z);scene.add(f)}
+raycaster=new THREE.Raycaster();mouse=new THREE.Vector2()}
+function plantModel(id,v){let g=new THREE.Group(),c=crop(id),leaf=mat(0x4e9c4f),fruit=mat(c.color,.45);let height=.35+v*.95;let stem=new THREE.Mesh(new THREE.CylinderGeometry(.045,.07,height,7),leaf);stem.position.y=height/2;g.add(stem);
+for(let i=0;i<5;i++){let l=new THREE.Mesh(new THREE.SphereGeometry(.22+v*.08,9,7),mat(i%2?0x60b65a:0x438d49));let a=i/5*Math.PI*2;l.position.set(Math.cos(a)*.27,height*.55+Math.sin(i)*.12,Math.sin(a)*.27);l.scale.y=.45;g.add(l)}
+if(v>.28){let geo=id==='carrot'?new THREE.ConeGeometry(.22+v*.1,.62+v*.35,9):new THREE.SphereGeometry(.22+v*.2,12,10);let f=new THREE.Mesh(geo,fruit);f.position.y=height+.15; if(id==='carrot')f.rotation.z=Math.PI;g.add(f);if(id==='watermelon'){f.scale.set(1.2,.8,1.2)}}
+if(v>=1){let star=new THREE.Mesh(new THREE.OctahedronGeometry(.13),mat(0xffe36c));star.position.y=height+.7;g.add(star)}
+return g}
+function rebuild(){for(let o of plantObjects)scene.remove(o);for(let b of bedTargets)scene.remove(b);plantObjects=[];bedTargets=[];let rows=Math.ceil(S.plots.length/5);
+S.plots.forEach((p,i)=>{let x=(i%5-2)*2.35,z=(Math.floor(i/5)-(rows-1)/2)*2.35;let g=new THREE.Group();g.position.set(x,0,z);scene.add(g);box(g,2.12,.25,2.12,0x8e6038,0,.02,0);let soil=box(g,1.88,.1,1.88,0x563a2b,0,.19,0);soil.userData.index=i;bedTargets.push(soil);if(p){let obj=plantModel(p.id,growth(p));obj.position.set(x,.26,z);scene.add(obj);plantObjects.push(obj)}})}
+function updateInventory(){let el=document.querySelector('#inventory');el.innerHTML='';let entries=Object.entries(S.harvested).filter(x=>x[1]>0);if(!entries.length)el.innerHTML='<div class="muted">No harvested crops yet. Sell your first harvest here!</div>';entries.forEach(([id,n])=>{let c=crop(id);el.innerHTML+=`<div class="item"><span class="emoji">${c.emoji}</span><div class="info"><b>${c.name}</b><small>${c.value} coins each</small></div><span class="count">x${n}</span></div>`})}
+function updateShop(){let el=document.querySelector('#shop');el.innerHTML='';if(S.tab==='seed'){el.innerHTML='<div class="muted">Seeds restock over time. Pick one to plant in your garden.</div>';CROPS.forEach(c=>{let n=S.inventory[c.id]||0;el.innerHTML+=`<div class="item"><span class="emoji">${c.emoji}</span><div class="info"><b>${c.name}</b><small>${c.time}s grow · ${c.value} base value · stock ${c.stock}</small></div><span class="count">x${n}</span><button class="${S.selected===c.id?'gold':'secondary'}" data-sel="${c.id}">${S.selected===c.id?'✓':'Use'}</button><button data-buy="${c.id}">${c.price}🪙</button></div>`})}
+if(S.tab==='gear'){el.innerHTML='<div class="muted">Permanent garden equipment upgrades.</div>';GEARS.forEach(g=>{let owned=!!S.gear[g.id];el.innerHTML+=`<div class="item"><span class="emoji">${g.emoji}</span><div class="info"><b>${g.name}</b><small>${g.desc}</small></div><button ${owned?'disabled':''} data-gear="${g.id}">${owned?'Owned':g.price+'🪙'}</button></div>`})}
+if(S.tab==='pet'){el.innerHTML='<div class="muted">Friendly helpers give your garden small bonuses.</div>';PETS.forEach(p=>{let owned=S.pets.includes(p.id);el.innerHTML+=`<div class="item"><span class="emoji">${p.emoji}</span><div class="info"><b>${p.name}</b><small>${p.desc}</small></div><button ${owned?'disabled':''} data-pet="${p.id}">${owned?'Adopted':p.price+'🪙'}</button></div>`})}
+el.querySelectorAll('[data-sel]').forEach(b=>b.onclick=()=>{S.selected=b.dataset.sel;notify(crop(S.selected).name+' selected. Click a garden plot.');updateShop()});el.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>buySeed(b.dataset.buy));el.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>buyGear(b.dataset.gear));el.querySelectorAll('[data-pet]').forEach(b=>b.onclick=()=>buyPet(b.dataset.pet))}
+function update(){document.querySelector('#coins').textContent='🪙 '+S.coins;document.querySelector('#level').textContent=S.level;document.querySelector('#harvests').textContent=S.harvests;updateShop();updateInventory();document.querySelector('#tasks').innerHTML=`Harvest 5 crops: ${Math.min(5,S.harvests)}/5<br>Own 3 crop types: ${Object.values(S.inventory).filter(v=>v>0).length}/3<br>Garden helpers: ${S.pets.length} pets`;}
+function buySeed(id){let c=crop(id);if(S.coins<c.price){notify('Not enough coins!');return}S.coins-=c.price;S.inventory[id]=(S.inventory[id]||0)+1;S.selected=id;save();update();notify('Bought '+c.name+' seeds!')}
+function buyGear(id){let g=GEARS.find(x=>x.id===id);if(S.coins<g.price){notify('Not enough coins!');return}S.coins-=g.price;S.gear[id]=true;save();update();rebuild();notify(g.name+' installed!')}
+function buyPet(id){let p=PETS.find(x=>x.id===id);if(S.coins<p.price){notify('Not enough coins!');return}S.coins-=p.price;S.pets.push(id);save();update();notify(p.name+' joined your garden!')}
+function clickWorld(e){if(e.button!==0)return;let rect=renderer.domElement.getBoundingClientRect();mouse.x=(e.clientX/innerWidth)*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;raycaster.setFromCamera(mouse,camera);let hits=raycaster.intersectObjects(bedTargets);if(!hits.length)return;let i=hits[0].object.userData.index,p=S.plots[i];if(p){if(growth(p)<1){notify(crop(p.id).name+' is '+Math.floor(growth(p)*100)+'% grown.');return}let c=crop(p.id),mut=Math.random()<.08?'Golden':(weather==='rain'&&Math.random()<.08?'Wet':null);let value=c.value*(mut==='Golden'?5:mut==='Wet'?1.5:1);if(S.gear.golden_can&&Math.random()<.15)value*=2;if(S.pets.includes('bee'))value*=1.1;if(S.pets.includes('bunny')&&Math.random()<.2)value*=1.5;S.harvested[p.id]=(S.harvested[p.id]||0)+1;S.harvestedValue=(S.harvestedValue||0)+Math.round(value);S.harvests++;S.plots[i]=null;let newLevel=Math.min(5,1+Math.floor(S.harvests/8));if(newLevel>S.level){S.level=newLevel;notify('Garden level up! Level '+S.level+'!')}else notify((mut?mut+' mutation! ':'')+'Harvested '+c.name+'! Added to backpack.');save();rebuild();update();return}
+let id=S.selected;if(!(S.inventory[id]>0)){notify('You need more '+crop(id).name+' seeds.');return}S.inventory[id]--;S.plots[i]={id,planted:Date.now()};save();rebuild();update();notify('Planted '+crop(id).name+'!')}
+function setTab(t){S.tab=t;['seed','gear','pet'].forEach(k=>document.querySelector('#'+k+'Tab').className=k===t?'gold':'secondary');updateShop()}
+document.querySelector('#seedTab').onclick=()=>setTab('seed');document.querySelector('#gearTab').onclick=()=>setTab('gear');document.querySelector('#petTab').onclick=()=>setTab('pet');
+document.querySelector('#sellAll').onclick=()=>{let total=S.harvestedValue||0;for(let [id,n] of Object.entries(S.harvested)){S.harvested[id]=0}S.harvestedValue=0;if(!total){notify('Your backpack is empty!');return}S.coins+=total;save();update();notify('Sold your harvest for '+total+' coins!')};
+function modal(title,text,fn){document.querySelector('#modalTitle').textContent=title;document.querySelector('#modalText').textContent=text;document.querySelector('#modalWrap').classList.add('show');document.querySelector('#modalOk').onclick=()=>{document.querySelector('#modalWrap').classList.remove('show');fn()}}
+document.querySelector('#modalCancel').onclick=()=>document.querySelector('#modalWrap').classList.remove('show');
+document.querySelector('#expand').onclick=()=>{let cost=250*S.level;if(S.level>=5||S.coins<cost){notify(S.level>=5?'Garden fully expanded!':'You need '+cost+' coins.');return}modal('Expand your garden?',`Spend ${cost} coins to unlock 5 more planting plots?`,()=>{S.coins-=cost;S.level++;for(let i=0;i<5;i++)S.plots.push(null);save();rebuild();update();notify('Your garden expanded!')})};
+document.querySelector('#save').onclick=()=>{save();notify('Garden saved!')};
+function changeWeather(){let types=[['sun','☀️ Sunny weather · Crops grow faster'],['rain','🌧️ Rainy weather · Crops grow much faster'],['cloud','☁️ Cloudy weather · Normal growth']];let pick=types[Math.floor(Math.random()*types.length)];weather=pick[0];document.querySelector('#weather').textContent=pick[1];rebuild()}
+function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}
+load();if(!S.plots||!S.plots.length)S.plots=Array(25).fill(null);init();rebuild();update();renderer.domElement.addEventListener('pointerup',clickWorld);animate();setInterval(()=>{rebuild()},1300);setInterval(changeWeather,45000);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});window.addEventListener('beforeunload',save);
+</script></body></html>
