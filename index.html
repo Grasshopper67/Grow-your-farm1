@@ -66,6 +66,7 @@ function load(){try{let v=JSON.parse(localStorage.getItem(KEY));if(v)S={...S,...
 function init(){scene=new THREE.Scene();scene.background=new THREE.Color(0xb7dfed);scene.fog=new THREE.Fog(0xb7dfed,28,65);camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,100);camera.position.set(10,10,17);
 renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;host.appendChild(renderer.domElement);
 controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,0,0);controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.47;controls.minDistance=9;controls.maxDistance=34;
+controls.enablePan=false;controls.mouseButtons.LEFT=THREE.MOUSE.PAN;controls.mouseButtons.RIGHT=THREE.MOUSE.ROTATE;renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 scene.add(new THREE.HemisphereLight(0xffffff,0x76915e,2));let sun=new THREE.DirectionalLight(0xfff0ce,2.2);sun.position.set(-10,20,12);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
 const grassCanvas=document.createElement('canvas');grassCanvas.width=grassCanvas.height=256;const gx=grassCanvas.getContext('2d');gx.fillStyle='#78b86d';gx.fillRect(0,0,256,256);for(let n=0;n<1800;n++){gx.fillStyle=['#6ca962','#8bc67b','#72ad65','#98cb83'][n%4];gx.globalAlpha=.25;gx.fillRect(Math.random()*256,Math.random()*256,1+Math.random()*3,1+Math.random()*3)}gx.globalAlpha=1;const grassTex=new THREE.CanvasTexture(grassCanvas);grassTex.wrapS=grassTex.wrapT=THREE.RepeatWrapping;grassTex.repeat.set(8,8);const groundMat=new THREE.MeshStandardMaterial({map:grassTex,color:0xffffff,roughness:1});const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.2;ground.receiveShadow=true;scene.add(ground);
 for(let i=0;i<14;i++){let h=new THREE.Mesh(new THREE.IcosahedronGeometry(4+Math.random()*3,1),mat(i%2?0x8dc77a:0x7bb66d));h.scale.y=.5;h.position.set(Math.cos(i/14*Math.PI*2)*28,-1.4,Math.sin(i/14*Math.PI*2)*28);scene.add(h)}
@@ -112,29 +113,26 @@ function makeBlock(parent,w,h,d,color,x,y,z,round=0){
 }
 function makeFarmer(){
  farmer=new THREE.Group();farmer.position.set(0,0,10.2);scene.add(farmer);
- const skin=0xe9b98f, shirt=0x3e83bd, pants=0x34445d, shoes=0x3b302b;
- const torso=new THREE.Group();torso.position.y=1.35;farmer.add(torso);
- makeBlock(torso,.86,.9,.42,shirt,0,0,0);
- // Shirt details and belt
- makeBlock(torso,.88,.12,.44,0x315f8b,0,-.36,0);
- makeBlock(torso,.12,.48,.03,0xf0d8a4,0,.08,.225);
- const head=new THREE.Group();head.position.set(0,2.18,0);farmer.add(head);
- makeBlock(head,.66,.66,.62,skin,0,0,0);
- makeBlock(head,.7,.16,.68,0x62432e,0,.34,0);
- // Face points toward local -Z.
- makeBlock(head,.07,.07,.025,0x282b30,-.14,.03,-.315);
- makeBlock(head,.07,.07,.025,0x282b30,.14,.03,-.315);
- makeBlock(head,.16,.035,.025,0x9d5548,0,-.14,-.32);
- const leftArm=new THREE.Group(),rightArm=new THREE.Group();
- leftArm.position.set(-.52,1.72,0);rightArm.position.set(.52,1.72,0);
- farmer.add(leftArm,rightArm);
- makeBlock(leftArm,.28,.78,.3,shirt,0,-.36,0);makeBlock(leftArm,.25,.28,.27,skin,0,-.85,0);
- makeBlock(rightArm,.28,.78,.3,shirt,0,-.36,0);makeBlock(rightArm,.25,.28,.27,skin,0,-.85,0);
- const leftLeg=new THREE.Group(),rightLeg=new THREE.Group();
- leftLeg.position.set(-.23,.92,0);rightLeg.position.set(.23,.92,0);
- farmer.add(leftLeg,rightLeg);
- makeBlock(leftLeg,.34,.82,.36,pants,0,-.35,0);makeBlock(leftLeg,.38,.2,.52,shoes,0,-.78,-.06);
- makeBlock(rightLeg,.34,.82,.36,pants,0,-.35,0);makeBlock(rightLeg,.38,.2,.52,shoes,0,-.78,-.06);
+ const skin=new THREE.MeshStandardMaterial({color:0xdcae88,roughness:.88}),shirt=new THREE.MeshStandardMaterial({color:0x3d79a8,roughness:.82}),trim=new THREE.MeshStandardMaterial({color:0x244f70}),pants=new THREE.MeshStandardMaterial({color:0x303e50}),shoes=new THREE.MeshStandardMaterial({color:0x292522}),hair=new THREE.MeshStandardMaterial({color:0x493326}),eyes=new THREE.MeshStandardMaterial({color:0x282a2b}),detail=new THREE.MeshStandardMaterial({color:0xe6d4b4});
+ function shape(p,g,m,x,y,z,sx=1,sy=1,sz=1){let o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;o.receiveShadow=true;p.add(o);return o}
+ function cap(p,r,l,m,x,y,z){return shape(p,new THREE.CapsuleGeometry(r,l,5,10),m,x,y,z)}
+ const torso=new THREE.Group();torso.position.y=1.34;farmer.add(torso);
+ shape(torso,new THREE.CapsuleGeometry(.37,.34,6,12),shirt,0,0,0,1,.95,.62);
+ shape(torso,new THREE.BoxGeometry(.66,.08,.035),trim,0,-.22,.224);
+ shape(torso,new THREE.BoxGeometry(.045,.36,.025),detail,0,.015,.238);
+ shape(torso,new THREE.BoxGeometry(.22,.09,.045),trim,0,.37,.12);
+ shape(torso,new THREE.CylinderGeometry(.115,.13,.16,12),skin,0,.55,0);
+ const head=new THREE.Group();head.position.set(0,2.14,0);farmer.add(head);
+ shape(head,new THREE.SphereGeometry(.37,20,16),skin,0,0,0,.91,1.04,.86);
+ shape(head,new THREE.SphereGeometry(.33,16,12),hair,0,.235,.035,1.02,.58,.95);
+ shape(head,new THREE.SphereGeometry(.22,14,10),hair,0,.12,-.22,1.15,.5,.65);
+ for(const side of [-1,1]){shape(head,new THREE.SphereGeometry(.075,10,8),skin,side*.34,-.015,0,.7,1,.7);shape(head,new THREE.SphereGeometry(.035,10,8),eyes,side*.125,.035,-.306,.8,1,.5);shape(head,new THREE.SphereGeometry(.018,8,6),detail,side*.125,.045,-.32,.8,1,.5)}
+ shape(head,new THREE.SphereGeometry(.045,10,8),skin,0,-.045,-.315,.7,.75,.7);
+ shape(head,new THREE.BoxGeometry(.105,.018,.018),eyes,0,-.17,-.302);
+ const leftArm=new THREE.Group(),rightArm=new THREE.Group();leftArm.position.set(-.43,1.68,0);rightArm.position.set(.43,1.68,0);farmer.add(leftArm,rightArm);
+ for(const arm of [leftArm,rightArm]){cap(arm,.145,.34,shirt,0,-.25,0);cap(arm,.105,.34,skin,0,-.62,0);shape(arm,new THREE.SphereGeometry(.105,12,10),skin,0,-.84,-.005,1,.9,.8);shape(arm,new THREE.CylinderGeometry(.15,.145,.07,12),trim,0,-.43,0)}
+ const leftLeg=new THREE.Group(),rightLeg=new THREE.Group();leftLeg.position.set(-.2,.94,0);rightLeg.position.set(.2,.94,0);farmer.add(leftLeg,rightLeg);
+ for(const leg of [leftLeg,rightLeg]){cap(leg,.17,.38,pants,0,-.25,0);cap(leg,.125,.32,pants,0,-.59,-.005);shape(leg,new THREE.BoxGeometry(.32,.16,.48),shoes,0,-.82,-.075);shape(leg,new THREE.BoxGeometry(.29,.035,.025),detail,0,-.77,-.31)}
  farmerParts={leftArm,rightArm,leftLeg,rightLeg,torso,head};
 }
 function makeGroundDetail(){
@@ -195,7 +193,7 @@ function updateFarmer(dt){
  const speed=Math.hypot(farmerVelocity.x,farmerVelocity.z);
  const moving=speed>.18;
  if(moving){
-  const faceAngle=Math.atan2(farmerVelocity.x,farmerVelocity.z);
+  const faceAngle=Math.atan2(-farmerVelocity.x,-farmerVelocity.z);
   const angleDelta=Math.atan2(Math.sin(faceAngle-farmer.rotation.y),Math.cos(faceAngle-farmer.rotation.y));
   farmer.rotation.y+=angleDelta*(1-Math.exp(-16*dt));
 

@@ -1,21 +1,7 @@
-# Garden World 3D — Character Update
+# Garden World 3D
 
-This update adds a controllable blocky farmer character and a more detailed 3D environment.
+Controls: WASD/arrow keys to move, Shift to sprint, hold right mouse and drag to rotate camera, click beds to plant or harvest.
 
-## Controls
-- **WASD / Arrow keys:** walk around the garden
-- **Shift:** run
-- **Drag mouse:** orbit the camera
-- **Scroll:** zoom
-- **Click a soil plot:** plant a selected seed or harvest a ripe crop
+The farmer model now has rounded geometry, layered clothing, hair, facial features, and segmented limbs. The character turns toward its travel direction; forward movement faces away from the camera.
 
-## Publish
-Upload `index.html` and `README.md` to the root of your GitHub repository, replacing the old versions. GitHub Pages will redeploy automatically if already enabled.
-
-Three.js is loaded from jsDelivr, so an internet connection is required.
-
-
-Latest update: smoother camera-relative movement with acceleration, gradual stopping, responsive turning, improved walking/sprinting animation, and decorative grass blades surrounding the farm plot.
-
-
-Movement update: rebuilt the controls to feel closer to Roblox, with correctly oriented camera-relative WASD, responsive acceleration and braking, smoother character-facing rotation, and a camera that follows the avatar without lagging behind. The player can now explore the surrounding grass rather than being constrained to the fenced plot.
+For GitHub Pages, replace your repository's index.html with this file and commit the change.
