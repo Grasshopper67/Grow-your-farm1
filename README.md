@@ -1,7 +1,18 @@
 # Garden World 3D
 
-Controls: WASD/arrow keys to move, Shift to sprint, hold right mouse and drag to rotate camera, click beds to plant or harvest.
+A browser-playable 3D farming game.
 
-The farmer model now has rounded geometry, layered clothing, hair, facial features, and segmented limbs. The character turns toward its travel direction; forward movement faces away from the camera.
+## Controls
+- WASD / Arrow keys: move
+- Shift: sprint
+- Hold right mouse and drag: rotate camera
+- Click a garden bed: plant seeds or harvest ripe crops
 
-For GitHub Pages, replace your repository's index.html with this file and commit the change.
+## Latest update
+- Crop models now have crop-specific leaves, stems, fruit clusters, flower petals, and surface details.
+- Purchased Garden Bee and Lucky Bunny pets appear in the world and roam around the garden.
+- The wooden fence automatically expands with the number of planting plots, so later farm upgrades stay inside the fence.
+- Added more trees, bushes, wildflowers, rocks, and detailed soil beds around the map.
+
+## GitHub Pages
+Replace the existing repository `index.html` with this updated file, commit the change, and wait for GitHub Pages to redeploy.
