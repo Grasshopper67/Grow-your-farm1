@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Garden World 3D — Balanced Economy Edition</title>
+<title>Garden World 3D — Lush Grass Edition</title>
 <style>
 :root{--ink:#1a2b20;--green:#2e643b;--cream:#fdfbf7;--line:#e2d9c1;--muted:#647560}
 *{box-sizing:border-box;user-select:none}body{margin:0;overflow:hidden;background:#8bc6db;color:var(--ink);font-family:system-ui,Segoe UI,sans-serif}#world{position:fixed;inset:0}canvas{display:block}
@@ -27,7 +27,7 @@ button{border:0;border-radius:10px;background:var(--green);color:white;font-weig
 <body>
 <div id="world"></div>
 <header>
- <div class="brand"><div class="logo">🌻</div><div><h1>Garden World 3D</h1><small>Realistic Plants & Balanced Economy</small></div></div>
+ <div class="brand"><div class="logo">🌻</div><div><h1>Garden World 3D</h1><small>Lush Grass & Balanced Economy</small></div></div>
  <div class="stats">
   <div class="stat"><small>Coins</small><b id="coins">🪙 60</b></div>
   <div class="stat"><small>Level <span id="lvlNum">1</span></small><b id="xpText">0/100 XP</b><div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div></div>
@@ -51,7 +51,6 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-// Recalibrated economy: lower sell values and balanced seed prices
 const CROPS=[
  {id:'carrot',name:'Carrot',emoji:'🥕',price:10,value:16,time:14,xp:12,unlockLvl:1,color:0xf28a35},
  {id:'strawberry',name:'Strawberry',emoji:'🍓',price:22,value:34,time:24,xp:25,unlockLvl:1,color:0xe94758},
@@ -75,7 +74,7 @@ const PETS=[
  {id:'bunny',name:'Lucky Bunny',emoji:'🐰',price:750,desc:'Hops across plots to dig up bonus coins & seeds.'}
 ];
 
-const KEY='garden_world_3d_balanced_v9';
+const KEY='garden_world_3d_lushgrass_v10';
 let S={
  coins:60,level:1,xp:0,harvests:0,selected:'carrot',toolMode:'seed',
  inventory:{carrot:3},fertilizers:0,harvested:{},
@@ -207,7 +206,7 @@ function init(){
 
  const grassCanvas=document.createElement('canvas');grassCanvas.width=grassCanvas.height=512;
  const gx=grassCanvas.getContext('2d');gx.fillStyle='#569848';gx.fillRect(0,0,512,512);
- for(let n=0;n<8500;n++){
+ for(let n=0;n=8500;n++){
   gx.fillStyle=['#448038','#65ab57','#4e8d40','#75bd66','#3d7332'][n%5];
   gx.globalAlpha=.32;
   gx.fillRect(Math.random()*512,Math.random()*512,1+Math.random()*3.5,1+Math.random()*3.5);
@@ -246,32 +245,41 @@ function init(){
  rainSystem.visible=false;scene.add(rainSystem);
 
  raycaster=new THREE.Raycaster();mouse=new THREE.Vector2();
- makeGroundDetail();makeOuterGrass();makeFarmer();
+ makeGroundDetail();makeLushGrassTufts();makeFarmer();
 }
 
-function makeOuterGrass(){
- const bladeGeo=new THREE.ConeGeometry(.055,.42,3);bladeGeo.translate(0,.21,0);
- const bladeMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.88});
- const count=3200,blades=new THREE.InstancedMesh(bladeGeo,bladeMat,count);
+// Replaced single blades with rich, clustered 3D grass tufts for full, lush lawn coverage
+function makeLushGrassTufts(){
+ const tuftGroup=new THREE.Group();
+ const tuftGeo=new THREE.ConeGeometry(0.12,0.45,4);
+ tuftGeo.translate(0,0.22,0);
+ const tuftMat=new THREE.MeshStandardMaterial({color:0x4e9442,roughness:0.85});
+ 
+ const count=1400;
  const dummy=new THREE.Object3D();
- const colors=[new THREE.Color(0x45853b),new THREE.Color(0x5ba14e),new THREE.Color(0x6ab55b),new THREE.Color(0x7cc96d)];
+ const instancedTufts=new THREE.InstancedMesh(tuftGeo,tuftMat,count);
+ const colors=[new THREE.Color(0x3f7d35),new THREE.Color(0x509a45),new THREE.Color(0x5da84f),new THREE.Color(0x45853b)];
+ 
  let made=0,tries=0;
  while(made<count && tries<count*4){
   tries++;
-  const x=(Math.random()-.5)*52,z=(Math.random()-.5)*48;
-  if(Math.abs(x)<8.6 && Math.abs(z)<8.6)continue;
-  if(Math.hypot(x-10.5,z-3.5)<3.2)continue;
+  const x=(Math.random()-.5)*54,z=(Math.random()-.5)*50;
+  if(Math.abs(x)<8.8 && Math.abs(z)<8.8)continue;
+  if(Math.hypot(x-10.5,z-3.5)<3.4)continue;
+  
   dummy.position.set(x,0,z);
-  const h=.6+Math.random()*.9,lean=(Math.random()-.5)*.45;
-  dummy.scale.set(.6+Math.random()*.8,h,.6+Math.random()*.8);
-  dummy.rotation.set(lean,Math.random()*Math.PI*2,lean*.5);
-  dummy.updateMatrix();blades.setMatrixAt(made,dummy.matrix);
-  blades.setColorAt(made,colors[Math.floor(Math.random()*colors.length)]);
+  const scaleVar=0.7+Math.random()*0.8;
+  dummy.scale.set(scaleVar,0.8+Math.random()*0.6,scaleVar);
+  dummy.rotation.y=Math.random()*Math.PI*2;
+  dummy.updateMatrix();
+  instancedTufts.setMatrixAt(made,dummy.matrix);
+  instancedTufts.setColorAt(made,colors[Math.floor(Math.random()*colors.length)]);
   made++;
  }
- blades.count=made;blades.instanceMatrix.needsUpdate=true;
- if(blades.instanceColor)blades.instanceColor.needsUpdate=true;
- scene.add(blades);
+ instancedTufts.count=made;
+ instancedTufts.instanceMatrix.needsUpdate=true;
+ if(instancedTufts.instanceColor)instancedTufts.instanceColor.needsUpdate=true;
+ scene.add(instancedTufts);
 }
 
 let farmer,farmerParts={},farmerVelocity=new THREE.Vector3(),keys={},walkPhase=0;
@@ -397,7 +405,6 @@ function updateFarmer(dt){
  controls.target.add(followDelta);camera.position.add(followDelta);
 }
 
-// Highly Detailed & Realistic 3D Procedural Plants with Leaf Clusters and Petal Blossoms
 function createPlantMesh(p){
  const g=new THREE.Group(),c=crop(p.id);
  const mut=p.mutation||'normal';
