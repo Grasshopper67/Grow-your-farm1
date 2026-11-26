@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Garden World 3D — Lush Grass Edition</title>
+<title>Garden World 3D — Balanced Lighting Edition</title>
 <style>
 :root{--ink:#1a2b20;--green:#2e643b;--cream:#fdfbf7;--line:#e2d9c1;--muted:#647560}
 *{box-sizing:border-box;user-select:none}body{margin:0;overflow:hidden;background:#8bc6db;color:var(--ink);font-family:system-ui,Segoe UI,sans-serif}#world{position:fixed;inset:0}canvas{display:block}
@@ -27,7 +27,7 @@ button{border:0;border-radius:10px;background:var(--green);color:white;font-weig
 <body>
 <div id="world"></div>
 <header>
- <div class="brand"><div class="logo">🌻</div><div><h1>Garden World 3D</h1><small>Lush Grass & Balanced Economy</small></div></div>
+ <div class="brand"><div class="logo">🌻</div><div><h1>Garden World 3D</h1><small>Chill Lighting & Lush Grass</small></div></div>
  <div class="stats">
   <div class="stat"><small>Coins</small><b id="coins">🪙 60</b></div>
   <div class="stat"><small>Level <span id="lvlNum">1</span></small><b id="xpText">0/100 XP</b><div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div></div>
@@ -74,7 +74,7 @@ const PETS=[
  {id:'bunny',name:'Lucky Bunny',emoji:'🐰',price:750,desc:'Hops across plots to dig up bonus coins & seeds.'}
 ];
 
-const KEY='garden_world_3d_lushgrass_v10';
+const KEY='garden_world_3d_chillight_v11';
 let S={
  coins:60,level:1,xp:0,harvests:0,selected:'carrot',toolMode:'seed',
  inventory:{carrot:3},fertilizers:0,harvested:{},
@@ -160,8 +160,8 @@ function load(){
 
 function init(){
  scene=new THREE.Scene();
- scene.background=new THREE.Color(0xa4d7e6);
- scene.fog=new THREE.FogExp2(0xa4d7e6,0.013);
+ scene.background=new THREE.Color(0x92c5d4);
+ scene.fog=new THREE.FogExp2(0x92c5d4,0.012);
 
  camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,140);
  camera.position.set(12,13,19);
@@ -173,12 +173,12 @@ function init(){
  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  renderer.outputColorSpace=THREE.SRGBColorSpace;
  renderer.toneMapping=THREE.ACESFilmicToneMapping;
- renderer.toneMappingExposure=1.1;
+ renderer.toneMappingExposure=1.0;
  host.appendChild(renderer.domElement);
 
  composer=new EffectComposer(renderer);
  composer.addPass(new RenderPass(scene,camera));
- const bloomPass=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.35,0.4,0.9);
+ const bloomPass=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.22,0.4,0.9);
  composer.addPass(bloomPass);
 
  controls=new OrbitControls(camera,renderer.domElement);
@@ -192,11 +192,11 @@ function init(){
  controls.mouseButtons.RIGHT=THREE.MOUSE.ROTATE;
  renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 
- hemiLight=new THREE.HemisphereLight(0xffffff,0x5c7c45,1.8);
+ hemiLight=new THREE.HemisphereLight(0xfff8ee,0x688c52,1.3);
  scene.add(hemiLight);
 
- sunLight=new THREE.DirectionalLight(0xfff5d6,2.5);
- sunLight.position.set(-15,25,16);
+ sunLight=new THREE.DirectionalLight(0xfffaea,1.4);
+ sunLight.position.set(-15,22,16);
  sunLight.castShadow=true;
  sunLight.shadow.mapSize.set(2048,2048);
  sunLight.shadow.bias=-0.0005;
@@ -206,7 +206,7 @@ function init(){
 
  const grassCanvas=document.createElement('canvas');grassCanvas.width=grassCanvas.height=512;
  const gx=grassCanvas.getContext('2d');gx.fillStyle='#569848';gx.fillRect(0,0,512,512);
- for(let n=0;n=8500;n++){
+ for(let n=0;n<8500;n++){
   gx.fillStyle=['#448038','#65ab57','#4e8d40','#75bd66','#3d7332'][n%5];
   gx.globalAlpha=.32;
   gx.fillRect(Math.random()*512,Math.random()*512,1+Math.random()*3.5,1+Math.random()*3.5);
@@ -226,7 +226,7 @@ function init(){
 
  const pondGroup=new THREE.Group();pondGroup.position.set(10.5,0,3.5);scene.add(pondGroup);
  const rim=new THREE.Mesh(new THREE.TorusGeometry(2.4,.28,10,24),mat(0x8a8578,.85));rim.rotation.x=Math.PI/2;rim.position.y=.05;rim.receiveShadow=true;pondGroup.add(rim);
- pondMesh=new THREE.Mesh(new THREE.CircleGeometry(2.35,28),new THREE.MeshStandardMaterial({color:0x2b9eb3,roughness:0.12,metalness:0.65,emissive:0x072b36,emissiveIntensity:0.4}));
+ pondMesh=new THREE.Mesh(new THREE.CircleGeometry(2.35,28),new THREE.MeshStandardMaterial({color:0x2b9eb3,roughness:0.12,metalness:0.65,emissive:0x072b36,emissiveIntensity:0.3}));
  pondMesh.rotation.x=-Math.PI/2;pondMesh.position.y=.04;pondGroup.add(pondMesh);
  for(let k=0;k<3;k++){
   const pad=new THREE.Mesh(new THREE.CylinderGeometry(.32,.32,.03,14),mat(0x3f8f3d,.6));
@@ -248,7 +248,6 @@ function init(){
  makeGroundDetail();makeLushGrassTufts();makeFarmer();
 }
 
-// Replaced single blades with rich, clustered 3D grass tufts for full, lush lawn coverage
 function makeLushGrassTufts(){
  const tuftGroup=new THREE.Group();
  const tuftGeo=new THREE.ConeGeometry(0.12,0.45,4);
@@ -328,7 +327,7 @@ function makeGroundDetail(){
   const bulbMat=new THREE.MeshStandardMaterial({color:0xffdd88,emissive:0xffaa22,emissiveIntensity:0,roughness:0.2});
   const bulb=new THREE.Mesh(new THREE.BoxGeometry(.24,.28,.24),bulbMat);bulb.position.y=2.72;lg.add(bulb);
   box(lg,.42,.1,.42,0x1f242d,0,2.9,0,.4);
-  const pt=new THREE.PointLight(0xffb84d,0,14);pt.position.set(lx,2.75,lz);scene.add(pt);
+  const pt=new THREE.PointLight(0xffb84d,0,12);pt.position.set(lx,2.75,lz);scene.add(pt);
   lanternLights.push(pt);lanternBulbs.push(bulbMat);
  });
 }
@@ -410,10 +409,10 @@ function createPlantMesh(p){
  const mut=p.mutation||'normal';
  
  let baseColor=c.color, roughness=0.32, metalness=0.08, emissive=0x000000, emInt=0;
- if(mut==='golden'){baseColor=0xffd700;roughness=0.18;metalness=0.85;emissive=0xffaa00;emInt=0.45;}
- else if(mut==='rainbow'){baseColor=0xff66ff;roughness=0.12;metalness=0.88;emissive=0xd946ef;emInt=0.55;}
- else if(mut==='crystal'){baseColor=0x38bdf8;roughness=0.05;metalness=0.92;emissive=0x0ea5e9;emInt=0.65;}
- else if(p.id==='moonflower'||p.id==='void_blossom'||p.id==='starfruit'){emissive=c.color;emInt=0.35;}
+ if(mut==='golden'){baseColor=0xffd700;roughness=0.18;metalness=0.85;emissive=0xffaa00;emInt=0.35;}
+ else if(mut==='rainbow'){baseColor=0xff66ff;roughness=0.12;metalness=0.88;emissive=0xd946ef;emInt=0.45;}
+ else if(mut==='crystal'){baseColor=0x38bdf8;roughness=0.05;metalness=0.92;emissive=0x0ea5e9;emInt=0.55;}
+ else if(p.id==='moonflower'||p.id==='void_blossom'||p.id==='starfruit'){emissive=c.color;emInt=0.3;}
 
  const leafMat=mat(mut==='golden'?0xeab308:mut==='rainbow'?0xec4899:mut==='crystal'?0x7dd3fc:0x2d682b,.78);
  const leafLight=mat(mut==='golden'?0xfde047:mut==='rainbow'?0xf472b6:mut==='crystal'?0xbae6fd:0x448a41,.75);
@@ -487,7 +486,7 @@ function createPlantMesh(p){
    const a=k*Math.PI/5;
    mesh(new THREE.SphereGeometry(.24,12,9),fruitMat,Math.cos(a)*.32,height*1.24,Math.sin(a)*.32,0,a,0,1.45,.45,.85);
   }
-  mesh(new THREE.SphereGeometry(.19,14,12),mat(0xfc8181,.2,.8,0xf43f5e,1.2),0,height*1.24,0);
+  mesh(new THREE.SphereGeometry(.19,14,12),mat(0xfc8181,.2,.8,0xf43f5e,1.0),0,height*1.24,0);
  }else{
   mesh(new THREE.CylinderGeometry(.045,.06,height*1.2,8),stemMat,0,height*0.6,0);
   for(let k=0;k<8;k++){
@@ -498,10 +497,10 @@ function createPlantMesh(p){
    const a=k*Math.PI/5;
    mesh(new THREE.SphereGeometry(.19,12,9),fruitMat,Math.cos(a)*.24,height*1.22,Math.sin(a)*.24,0,a,0,1.2,.48,.75);
   }
-  mesh(new THREE.SphereGeometry(.15,12,10),mat(0xffdf78,.3,.2,0xfacc15,0.6),0,height*1.22,0);
+  mesh(new THREE.SphereGeometry(.15,12,10),mat(0xffdf78,.3,.2,0xfacc15,0.5),0,height*1.22,0);
  }
 
- const glint=mesh(new THREE.OctahedronGeometry(.16),new THREE.MeshStandardMaterial({color:0xfff7aa,emissive:0xffd700,emissiveIntensity:1.5,roughness:0.1}),0,height*1.5,0);
+ const glint=mesh(new THREE.OctahedronGeometry(.16),new THREE.MeshStandardMaterial({color:0xfff7aa,emissive:0xffd700,emissiveIntensity:1.0,roughness:0.1}),0,height*1.5,0);
  glint.visible=false;
  let baseScale=mut==='giant'?1.45:1.0;
  g.userData={glint,baseScale,phase:Math.random()*Math.PI*2};
@@ -882,19 +881,20 @@ function animate(){
  let now=Date.now();
  const t=clock.elapsedTime;
 
- dayTime=(dayTime+dt*0.008)%1;
+ dayTime=(dayTime+dt*0.005)%1;
  const sunAngle=dayTime*Math.PI*2;
  sunLight.position.set(Math.cos(sunAngle)*28,Math.sin(sunAngle)*28,14);
  const dayFactor=Math.max(0,Math.sin(sunAngle));
- const isNight=dayFactor<0.2;
+ const isNight=dayFactor<0.25;
 
- sunLight.intensity=0.2+dayFactor*2.4;
- hemiLight.intensity=0.45+dayFactor*1.4;
+ // Capped intensity and smoothed gradients to keep lighting calm and atmospheric
+ sunLight.intensity=0.3+dayFactor*1.1;
+ hemiLight.intensity=0.6+dayFactor*0.7;
 
  lanternLights.forEach((pt,idx)=>{
-  const targetInt=isNight?2.8:0;
+  const targetInt=isNight?2.2:0;
   pt.intensity=THREE.MathUtils.lerp(pt.intensity,targetInt,dt*3);
-  lanternBulbs[idx].emissiveIntensity=pt.intensity*0.8;
+  lanternBulbs[idx].emissiveIntensity=pt.intensity*0.7;
  });
 
  if(now-lastWeather>45000){
@@ -903,21 +903,21 @@ function animate(){
   rainSystem.visible=(weather==='rain');
  }
 
- const daySky=new THREE.Color(weather==='rain'?0x5c7685:0x9bd2e3);
- const sunsetSky=new THREE.Color(0xe8926b);
- const nightSky=new THREE.Color(0x131d33);
+ const daySky=new THREE.Color(weather==='rain'?0x5c7685:0x92c5d4);
+ const sunsetSky=new THREE.Color(0xd4876b);
+ const nightSky=new THREE.Color(0x1a2436);
  let activeSky=daySky.clone();
- if(dayFactor<0.15)activeSky.lerp(nightSky,1-(dayFactor/0.15));
- else if(dayFactor<0.35)activeSky.lerp(sunsetSky,1-((dayFactor-0.15)/0.2));
+ if(dayFactor<0.2)activeSky.lerp(nightSky,1-(dayFactor/0.2));
+ else if(dayFactor<0.4)activeSky.lerp(sunsetSky,1-((dayFactor-0.2)/0.2));
  scene.background.lerp(activeSky,dt*2);
  scene.fog.color.copy(scene.background);
 
- const timeLabel=isNight?'🌙 Night':dayFactor<0.35?'🌅 Dusk':'☀️ Day';
+ const timeLabel=isNight?'🌙 Night':dayFactor<0.4?'🌅 Dusk':'☀️ Day';
  const weatherLabel=weather==='rain'?'🌧️ Rain (+55% speed)':weather==='wind'?'🍃 Breezy':'Sunny (+15% speed)';
  document.querySelector('#weather').textContent=`${timeLabel} · ${weatherLabel}`;
 
  if(pondMesh){
-  pondMesh.material.emissiveIntensity=0.35+Math.sin(t*2.5)*0.15;
+  pondMesh.material.emissiveIntensity=0.25+Math.sin(t*2)*0.1;
  }
 
  if(rainSystem.visible){
